@@ -1,6 +1,34 @@
 import telebot
 import requests
 import datetime
+import sqlite3
+
+con = sqlite3.connect("pollen_database.db")
+cur = con.cursor()
+
+cur.execute("CREATE TABLE IF NOT EXISTS Bereza(date INTEGER, value INTEGER)")
+cur.execute("INSERT INTO Bereza (date, value) VALUES (1, 0)")
+res = cur.execute("SELECT * FROM Bereza")
+print(res.fetchone())
+
+"""
+class pollen:
+    pollen = {
+        'Bereza' : {'Jan' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false, '30' : false, '31' : false}, 
+                    'Feb' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false}, 
+                    'Mar' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false, '30' : false, '31' : false}, 
+                    'Apr' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false, '30' : false}, 
+                    'May' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false, '30' : false, '31' : false}, 
+                    'Jun' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false, '30' : false}, 
+                    'Jul' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false, '30' : false, '31' : false}, 
+                    'Aug' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false, '30' : false, '31' : false}, 
+                    'Sep' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false, '30' : false}, 
+                    'Oct' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false, '30' : false, '31' : false}, 
+                    'Nov' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false, '30' : false}, 
+                    'Dec' : {'1' : false, '2' : false, '3' : false, '4' : false, '5' : false, '6' : false, '7' : false, '8' : false, '9' : false, '10' : false, '11' : false, '12' : false, '13' : false, '14' : false, '15' : false, '16' : false, '17' : false, '18' : false, '19' : false, '20' : false, '21' : false, '22' : false, '23' : false, '24' : false, '25' : false, '26' : false, '27' : false, '28' : false, '29' : false, '30' : false, '31' : false}
+        }
+    }
+"""
 
 #Tokens
 weather_token = 'ddd0af3053f9e38df2bd318431751176'
