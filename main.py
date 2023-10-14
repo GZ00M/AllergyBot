@@ -34,16 +34,18 @@ def request(message):
         data = response.json()
 
         #Saving data from JSON for easy access
-        temp = data['main']['temp']
+        temp = round(data['main']['temp'] - 273.15, 2)
         desc = data['weather'][0]['description']
         hum = data['main']['humidity']
         wind_speed = data['wind']['speed']
 
+        print(data)
+
         #Providing data
-        bot.send_message(message.chat.id, f'Temperature: {temp} K \
-                                \nDescription: {desc} \
-                                \nHumidity: {hum} \
-                                \nWind Speed: {wind_speed}')
+        bot.send_message(message.chat.id, f'Temperature: {temp} C \
+                                            \nDescription: {desc} \
+                                            \nHumidity: {hum}% \
+                                            \nWind Speed: {wind_speed} m/s')
     else:
         #Error if data is not fetched
         bot.reply_to(message, "Error fetching weather data")
