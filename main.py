@@ -1,38 +1,52 @@
- import telebot
+import telebot
 import requests
 
+#Tokens
 weather_token = 'ddd0af3053f9e38df2bd318431751176'
 bot_token = "6531175645:AAHTJRNrd09ae8YGPUljZ_IFcvdx4btPs7k"
 
+#Refernece to bot object
 bot = telebot.TeleBot(bot_token)
 
+#City and url template
 city = "Almaty"
-
 url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={weather_token}'
 
-response = requests.get(url)
+#Handler for /start command
+@bot.message_handler(commands=['start'])
+def start(message):
+    #Adding keyboard button
+    keyboard = telebot.types.ReplyKeyboardMarkup(True)
+    keyboard.row('/request')
+    
+    #Perform the button
+    bot.send_message(message.chat.id, "Current choosen city is Almaty", reply_markup=keyboard)
 
-if response.status_code == 200:
-    data = response.json()
-    temp = data['main']['temp']
-    desc = data['weather'][0]['description']
-    print(f'Temperature: {temp} K')
-    print(f'Description: {desc}')
-else:
-    print('Error fetching weather data')
-
-@bot.message_handler(commands=['start', 'help'])
-def send_welcome(message):
-	bot.reply_to(message, "Howdy, how are you doing?")
-
-@bot.message_handler(func=lambda message: True)
-def echo_all(message):
-	bot.reply_to(message, message.text)
-
+#Handler for /request command
 @bot.message_handler(commands = ['request'])
 def request(message):
-    url = get_url()
-    bot.send_photo(message.chat.id, url)
+    #Making request to OpenWheather
+    response = requests.get(url)
 
+    #Handling and processing response
+    if response.status_code == 200:
+        #Getting data in JSON format
+        data = response.json()
 
+        #Saving data from JSON for easy access
+        temp = data['main']['temp']
+        desc = data['weather'][0]['description']
+        hum = data['main']['humidity']
+        wind_speed = data['wind']['speed']
+
+        #Providing data
+        bot.send_message(message.chat.id, f'Temperature: {temp} K \
+                                \nDescription: {desc} \
+                                \nHumidity: {hum} \
+                                \nWind Speed: {wind_speed}')
+    else:
+        #Error if data is not fetched
+        bot.reply_to(message, "Error fetching weather data")
+
+#Continious polling
 bot.infinity_polling()
