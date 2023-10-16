@@ -86,7 +86,7 @@ def request(message):
             + (wind_speed * 1.1)) / 4
         b = 1
 
-        x = round(round(a, 2) * b)
+        x = round(round(a, 2) * b) if b != 0 else 0
 
         #Providing data
         bot.send_message(message.chat.id, f'{time.strftime("%d/%m/%Y %H:%M:%S")} \n\
@@ -142,7 +142,7 @@ def tomorrow(message):
             + (wind_speed * 1.1)) / 4
         b = 1
 
-        x = round(round(a, 2) * b)
+        x = round(round(a, 2) * b) if b != 0 else 0
 
         #Providing data
         bot.send_message(message.chat.id, f'{time.strftime("%d/%m/%Y")} \n\
@@ -186,7 +186,7 @@ def threedays(message):
                 + (wind_speed * 1.1)) / 4
             b = 1
 
-            x = round(round(a, 2) * b)
+            x = round(round(a, 2) * b) if b != 0 else 0
 
             #Providing data
             bot.send_message(message.chat.id, f'{time.strftime("%d/%m/%Y")} \n\
