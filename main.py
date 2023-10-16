@@ -39,21 +39,25 @@ bot = telebot.TeleBot(bot_token)
 
 #City and url template
 city = "Almaty"
+lat = "43.22"
+lon = "76.85"
 url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={weather_token}'
+url_future = f'http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={weather_token}'
 
 #Handler for /start command
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['start', 'back'])
 def start(message):
     #Adding keyboard button
     keyboard = telebot.types.ReplyKeyboardMarkup(True)
-    keyboard.row('/request')
+    keyboard.row('/now')
+    keyboard.row('/additional')
     keyboard.row('/help')
     
     #Perform the button
     bot.send_message(message.chat.id, "Current choosen city is Almaty", reply_markup=keyboard)
 
 #Handler for /request command
-@bot.message_handler(commands = ['request'])
+@bot.message_handler(commands = ['now'])
 def request(message):
     #Making request to OpenWheather
     response = requests.get(url)
@@ -67,21 +71,130 @@ def request(message):
         time = datetime.datetime.now()
         temp = round(data['main']['temp'] - 273.15, 2)
         desc = data['weather'][0]['description']
+        weather_id = data['weather'][0]['id']
         hum = data['main']['humidity']
         wind_speed = data['wind']['speed']
 
         #Uncomment this for debugging
         #print(data)
 
+        koef = {6 : 0.2, 2 : 0.4, 5 : 0.6, 3 : 0.8, 8 : 1, 7 : 1}
+
+        a = ((temp * 0.05 if temp > 0 else 0.01) \
+            + (2 if weather_id == 800 else koef[int(str(weather_id)[0])]) \
+            + (hum * 0.02) \
+            + (wind_speed * 1.1)) / 4
+        b = 1
+
+        x = round(round(a, 2) * b)
+
         #Providing data
         bot.send_message(message.chat.id, f'{time.strftime("%d/%m/%Y %H:%M:%S")} \n\
                                             \nTemperature: {temp} C \
                                             \nDescription: {desc} \
                                             \nHumidity: {hum}% \
-                                            \nWind Speed: {wind_speed} m/s')
+                                            \nWind Speed: {wind_speed} m/s \
+                                            \nDanger lever: {x}')
     else:
         #Error if data is not fetched
         bot.reply_to(message, "Error fetching weather data")
+
+@bot.message_handler(commands=['additional'])
+def additional(message):
+    #Adding keyboard button
+    keyboard = telebot.types.ReplyKeyboardMarkup(True)
+    keyboard.row('/tomorrow')
+    keyboard.row('/threedays')
+    keyboard.row('/back')
+    
+    #Perform the button
+    bot.send_message(message.chat.id, "Choose prediction date range", reply_markup=keyboard)
+
+@bot.message_handler(commands=['tomorrow'])
+def tomorrow(message):
+    response = requests.get(url_future)
+
+    time = datetime.datetime.today() + datetime.timedelta(days=1)
+
+    if response.status_code == 200:
+        timestamp_tomorrow_12pm = int(datetime.datetime.strptime(str(time.strftime("%d/%m/%Y")), "%d/%m/%Y").timestamp()) + 3600 * 12
+        
+        #Getting data in JSON format
+        for item in response.json()['list']:
+            if item['dt'] == timestamp_tomorrow_12pm:
+                data = item
+
+        #Tomorrow exactly 12PM
+        #print(int(datetime.datetime.strptime(str(time.strftime("%d/%m/%Y")), "%d/%m/%Y").timestamp()) + 3600 * 12)
+        #print(data)
+
+        temp = round(data['main']['temp'] - 273.15, 2)
+        desc = data['weather'][0]['description']
+        weather_id = data['weather'][0]['id']
+        hum = data['main']['humidity']
+        wind_speed = data['wind']['speed']
+
+        koef = {6 : 0.2, 2 : 0.4, 5 : 0.6, 3 : 0.8, 8 : 1, 7 : 1}
+
+        a = ((temp * 0.05 if temp > 0 else 0.01) \
+            + (2 if weather_id == 800 else koef[int(str(weather_id)[0])]) \
+            + (hum * 0.02) \
+            + (wind_speed * 1.1)) / 4
+        b = 1
+
+        x = round(round(a, 2) * b)
+
+        #Providing data
+        bot.send_message(message.chat.id, f'{time.strftime("%d/%m/%Y")} \n\
+                                            \nTemperature: {temp} C \
+                                            \nDescription: {desc} \
+                                            \nHumidity: {hum}% \
+                                            \nWind Speed: {wind_speed} m/s \
+                                            \nDanger lever: {x}')
+
+@bot.message_handler(commands=['threedays'])
+def threedays(message):
+    response = requests.get(url_future)
+
+    if response.status_code == 200:
+        for i in range(3):
+            time = datetime.datetime.today() + datetime.timedelta(days=i+1)
+
+            timestamp_tomorrow_12pm = int(datetime.datetime.strptime(str(time.strftime("%d/%m/%Y")), "%d/%m/%Y").timestamp()) + 3600 * 12
+            
+            #Getting data in JSON format
+            for item in response.json()['list']:
+                if item['dt'] == timestamp_tomorrow_12pm:
+                    data = item
+                    break
+
+            #Tomorrow exactly 12PM
+            #print(int(datetime.datetime.strptime(str(time.strftime("%d/%m/%Y")), "%d/%m/%Y").timestamp()) + 3600 * 12)
+            #print(data)
+
+            temp = round(data['main']['temp'] - 273.15, 2)
+            desc = data['weather'][0]['description']
+            weather_id = data['weather'][0]['id']
+            hum = data['main']['humidity']
+            wind_speed = data['wind']['speed']
+
+            koef = {6 : 0.2, 2 : 0.4, 5 : 0.6, 3 : 0.8, 8 : 1, 7 : 1}
+
+            a = ((temp * 0.05 if temp > 0 else 0.01) \
+                + (2 if weather_id == 800 else koef[int(str(weather_id)[0])]) \
+                + (hum * 0.02) \
+                + (wind_speed * 1.1)) / 4
+            b = 1
+
+            x = round(round(a, 2) * b)
+
+            #Providing data
+            bot.send_message(message.chat.id, f'{time.strftime("%d/%m/%Y")} \n\
+                                                \nTemperature: {temp} C \
+                                                \nDescription: {desc} \
+                                                \nHumidity: {hum}% \
+                                                \nWind Speed: {wind_speed} m/s\
+                                                \nDanger lever: {x}')
 
 @bot.message_handler(commands=['help'])
 def help(message):
