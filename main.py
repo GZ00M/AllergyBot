@@ -3,6 +3,23 @@ import requests
 import datetime
 import sqlite3
 
+class ActivityLogger:
+    def __init__(self, file):
+        self.filename = file
+        try:
+            f = open(file, 'r')
+            f.close()
+        except IOError:
+            f = open(file, 'w+')
+            f.close()
+
+    def log(self, button):
+        f = open(self.filename, "a")
+        f.write(f"\n{datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")} {button}")
+        f.close()
+
+logger = ActivityLogger("activity_logger.txt")
+
 con = sqlite3.connect("pollen_database.db")
 cur = con.cursor()
 
@@ -52,15 +69,19 @@ def start(message):
     keyboard.row('/now')
     keyboard.row('/additional')
     keyboard.row('/help')
+
+    logger.log("start")
     
     #Perform the button
     bot.send_message(message.chat.id, "Current choosen city is Almaty", reply_markup=keyboard)
 
 #Handler for /request command
 @bot.message_handler(commands = ['now'])
-def request(message):
+def now(message):
     #Making request to OpenWheather
     response = requests.get(url)
+
+    logger.log("now")
 
     #Handling and processing response
     if response.status_code == 200:
@@ -116,6 +137,8 @@ def tomorrow(message):
 
     time = datetime.datetime.today() + datetime.timedelta(days=1)
 
+    logger.log("tomorrow")
+
     if response.status_code == 200:
         timestamp_tomorrow_12pm = int(datetime.datetime.strptime(str(time.strftime("%d/%m/%Y")), "%d/%m/%Y").timestamp()) + 3600 * 12
         
@@ -155,6 +178,8 @@ def tomorrow(message):
 @bot.message_handler(commands=['threedays'])
 def threedays(message):
     response = requests.get(url_future)
+
+    logger.log("threedays")
 
     if response.status_code == 200:
         for i in range(3):
@@ -201,5 +226,14 @@ def help(message):
     #Perform the button
     bot.send_message(message.chat.id, "In order to use this bot please press start and request button")
 
-#Continious polling
+    logger.log("help")
+
+    '''
+    response = requests.get(f"http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat={lat}&lon={lon}&appid={weather_token}")
+
+    if response.status_code == 200:
+        data = response.json()
+        print(data)'''
+
+#Continious pollings
 bot.infinity_polling()
