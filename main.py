@@ -78,6 +78,12 @@ month_converter = {
                     '12' : 'December'
 }
 
+recommendations_from_dLevel = {
+    0 : 'В данный момент пыльцы в воздухе нет, вы можете проводить время на улице. Однако, следите за прогнозами и уровнем пыльцы в вашем районе. Регулярно проводите влажную уборку, используйте дома увлажнители воздуха, воздухоочистители или кондиционеры с фильтрами',
+    1 : 'Используйте антигистаминные препараты, как рекомендовано врачом, для снижения симптомов. Носите солнцезащитные очки и маску при выходе на улицу, чтобы защитить глаза и дыхательные пути. Ограничьте время пребывания на открытом воздухе, избегайте выездов на природу; проветривайте жилье после дождя или вечером, когда пыльца уже осела; промывайте нос соляным раствором',
+    2 : 'Оставайтесь в помещении. Используйте кондиционеры и пурификаторы воздуха с фильтрами для очищения воздуха внутри помещения. Применяйте антигистаминные препараты, рекомендованные врачом. Держите окна закрытыми в помещениях и в автомобиле; не перегружайте себя физическими нагрузками в сезон цветения; промывайте нос соляным раствором'
+}
+
 #Handler for /start command
 @bot.message_handler(commands=['start', 'back'])
 def start(message):
@@ -92,12 +98,12 @@ def start(message):
     #print(username)
 
     #ABOBA NEXT LEVEL
-    #cur.execute(f"CREATE TABLE IF NOT EXISTS {username} (TEXT);")
+    cur.execute(f"CREATE TABLE IF NOT EXISTS {username} (TEXT);")
 
     logger.log("start")
     
     #Perform the button
-    bot.send_message(message.chat.id, "Current choosen city is Almaty", reply_markup=keyboard)
+    bot.send_message(message.chat.id, "Выбран город Алматы", reply_markup=keyboard)
 
 #Handler for /request command
 @bot.message_handler(commands = ['now'])
@@ -146,15 +152,16 @@ def now(message):
 
         #Providing data
         bot.send_message(message.chat.id, f'{time.strftime("%d/%m/%Y %H:%M:%S")} \n\
-                                            \nTemperature: {temp} C \
-                                            \nDescription: {desc} \
-                                            \nHumidity: {hum}% \
-                                            \nWind Speed: {wind_speed} m/s \
-                                            \nDanger lever: {x if x <= 2 else 2} \
-                                            \nFlowering plants: {plants_with_max if max_val != 0 else "no plants are blooming now"}')
+                                            \nТемпература: {temp} C \
+                                            \nОписание погоды: {desc} \
+                                            \nВлажность: {hum}% \
+                                            \nСкорость ветра: {wind_speed} m/s \
+                                            \nУровень опастности: {x if x <= 2 else 2} \
+                                            \nЦветущие растения: {plants_with_max if max_val != 0 else "никакие растения сейчас не цветут"} \n\
+                                            \nРекомендации: {recommendations_from_dLevel[x if x <= 2 else 2]}')
     else:
         #Error if data is not fetched
-        bot.reply_to(message, "Error fetching weather data")
+        bot.reply_to(message, "Ошибка получения данных")
 
 @bot.message_handler(commands=['additional'])
 def additional(message):
@@ -165,7 +172,7 @@ def additional(message):
     keyboard.row('/back')
     
     #Perform the button
-    bot.send_message(message.chat.id, "Choose prediction date range", reply_markup=keyboard)
+    bot.send_message(message.chat.id, "Выберите период прогноза", reply_markup=keyboard)
 
 @bot.message_handler(commands=['tomorrow'])
 def tomorrow(message):
@@ -210,12 +217,13 @@ def tomorrow(message):
 
         #Providing data
         bot.send_message(message.chat.id, f'{time.strftime("%d/%m/%Y")} \n\
-                                            \nTemperature: {temp} C \
-                                            \nDescription: {desc} \
-                                            \nHumidity: {hum}% \
-                                            \nWind Speed: {wind_speed} m/s \
-                                            \nDanger lever: {x if x <= 2 else 2} \
-                                            \nFlowering plants: {plants_with_max if max_val != 0 else "no plants will be blooming"}')
+                                            \nТемпература: {temp} C \
+                                            \nОписание погоды: {desc} \
+                                            \nВлажность: {hum}% \
+                                            \nСкорость ветра: {wind_speed} m/s \
+                                            \nУровень опасности: {x if x <= 2 else 2} \
+                                            \nЦветущие растения: {plants_with_max if max_val != 0 else "не будет цветущих растений"} \n\
+                                            \nРекомендации: {recommendations_from_dLevel[x if x <= 2 else 2]}')
 
 @bot.message_handler(commands=['threedays'])
 def threedays(message):
@@ -262,19 +270,33 @@ def threedays(message):
 
             #Providing data
             bot.send_message(message.chat.id, f'{time.strftime("%d/%m/%Y")} \n\
-                                                \nTemperature: {temp} C \
-                                                \nDescription: {desc} \
-                                                \nHumidity: {hum}% \
-                                                \nWind Speed: {wind_speed} m/s\
-                                                \nDanger lever: {x if x <= 2 else 2} \
-                                                \nFlowering plants: {plants_with_max if max_val != 0 else "no plants will be blooming"}')
+                                                \nТемпература: {temp} C \
+                                                \nОписание погоды: {desc} \
+                                                \nВлажность: {hum}% \
+                                                \nСкорость ветра: {wind_speed} m/s\
+                                                \nУровень опасности: {x if x <= 2 else 2} \
+                                                \nЦветущие растения: {plants_with_max if max_val != 0 else "не будет цветущих растений"} \n\
+                                                \nРекомендации: {recommendations_from_dLevel[x if x <= 2 else 2]}')
 
 @bot.message_handler(commands=['help'])
 def help(message):
     #Perform the button
-    bot.send_message(message.chat.id, "In order to use this bot please press start and request button \
-                                        \n \
-                                        \nHere are 3 danger levels to describe the widespread of allergens: 0, 1, 2")
+    bot.send_message(message.chat.id, "Нажмите /now чтобы получить информацию на сейчас \
+                     \n \
+                     \n/additional хранит прогнозы на завтра /tomorrow и на 3 дня /threedays \
+                     \n \
+                     \nТри уровня опасности вычисляется за счет интенсивности цветения растении и погодных условии, которые могут разносить пыльца \
+                     \n \
+                     \n0 - очень низкий уровень распространения аллергенов в воздухе, незначительный эффект на самочувствии человека \
+                     \n1 - средний уровень аллергенов в воздухе, активное распространение мелких частиц во внешней среде, ощутимое воздействие на самочувствие человека \
+                     \n2 - очень высокая концентрация мелких частиц в воздухе, оказывающее максимальное воздействие на органы дыхания человека \
+                     \n \
+                     \nНа данный момент в базе есть такие растения как: \
+                     \n<u>Деревья</u>: Орешник, Ива, Берёза, Клён, Дуб, Тополь, Ясень, Ольха \
+                     \n<u>Травы</u>: Тимофеевка, Ковыль, Овсяница, Райграс, Пырей, Полынь, Амброзия \
+                     \n<u>Злаки</u>: Рожь, Пшеница, Овёс, Ячмень \
+                     \n \
+                     \nЕсли растения на которую у вас аллергия нет в списке, то напишите @kaktus685, постараемся оперативно добавить", parse_mode = "HTML")
 
     logger.log("help")
 
